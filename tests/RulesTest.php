@@ -1,31 +1,132 @@
 <?php
 
-namespace Pdp\Tests;
+declare(strict_types=1);
 
-use Pdp\Http\CurlHttpAdapter;
-use Pdp\PublicSuffixList;
-use Pdp\PublicSuffixListManager;
-use Pdp\Tests\Cache\FileCacheAdapter;
+namespace League\Uri\PublicSuffix\Tests;
+
+use League\Uri\PublicSuffix\Cache;
+use League\Uri\PublicSuffix\CurlHttpClient;
+use League\Uri\PublicSuffix\Manager;
+use League\Uri\PublicSuffix\Rules;
 use PHPUnit\Framework\TestCase;
 
-/**
- * This test case is based on the test data linked at
- * http://publicsuffix.org/list/ and provided by Rob Strading of Comodo.
- *
- * @see
- * http://mxr.mozilla.org/mozilla-central/source/netwerk/test/unit/data/test_psl.txt?raw=1
- */
-class CheckPublicSuffixTest extends TestCase
+class RulesTest extends TestCase
 {
     /**
-     * @var PublicSuffixList
+     * @var Rules
      */
-    private $list;
+    private $rules;
 
     public function setUp()
     {
-        $manager = new PublicSuffixListManager(new FileCacheAdapter(), new CurlHttpAdapter());
-        $this->list = $manager->getList();
+        $manager = new Manager(new Cache(), new CurlHttpClient());
+        $this->rules = $manager->getRules();
+    }
+
+    public function testNullWillReturnNullDomain()
+    {
+        $domain = $this->rules->resolve('COM');
+        $this->assertFalse($domain->isValid());
+    }
+
+    public function testIsSuffixValidFalse()
+    {
+        $domain = $this->rules->resolve('www.example.faketld');
+        $this->assertFalse($domain->isValid());
+        $this->assertSame('www', $domain->getSubDomain());
+    }
+
+    public function testIsSuffixValidTrue()
+    {
+        $domain = $this->rules->resolve('www.example.com');
+        $this->assertTrue($domain->isValid());
+        $this->assertSame('www', $domain->getSubDomain());
+    }
+
+    public function testIsSuffixValidFalseWithPunycoded()
+    {
+        $domain = $this->rules->resolve('www.example.xn--85x722f');
+        $this->assertFalse($domain->isValid());
+        $this->assertSame('xn--85x722f', $domain->getPublicSuffix());
+        $this->assertSame('www', $domain->getSubDomain());
+    }
+
+    public function testSudDomainIsNull()
+    {
+        $domain = $this->rules->resolve('ulb.ac.be');
+        $this->assertTrue($domain->isValid());
+        $this->assertSame('ac.be', $domain->getPublicSuffix());
+        $this->assertSame('ulb.ac.be', $domain->getRegistrableDomain());
+        $this->assertNull($domain->getSubDomain());
+    }
+
+    /**
+     * @dataProvider parseDataProvider
+     * @param mixed $publicSuffix
+     * @param mixed $registrableDomain
+     * @param mixed $domain
+     * @param mixed $expectedDomain
+     */
+    public function testGetRegistrableDomain($publicSuffix, $registrableDomain, $domain, $expectedDomain)
+    {
+        $this->assertSame($registrableDomain, $this->rules->resolve($domain)->getRegistrableDomain());
+    }
+
+    /**
+     * @dataProvider parseDataProvider
+     * @param mixed $publicSuffix
+     * @param mixed $registrableDomain
+     * @param mixed $domain
+     * @param mixed $expectedDomain
+     */
+    public function testGetPublicSuffix($publicSuffix, $registrableDomain, $domain, $expectedDomain)
+    {
+        $this->assertSame($publicSuffix, $this->rules->resolve($domain)->getPublicSuffix());
+    }
+
+    /**
+     * @dataProvider parseDataProvider
+     * @param mixed $publicSuffix
+     * @param mixed $registrableDomain
+     * @param mixed $domain
+     * @param mixed $expectedDomain
+     */
+    public function testGetDomain($publicSuffix, $registrableDomain, $domain, $expectedDomain)
+    {
+        $this->assertSame($expectedDomain, $this->rules->resolve($domain)->getDomain());
+    }
+
+    public function parseDataProvider()
+    {
+        return [
+            // public suffix, registrable domain, domain
+            // BEGIN https://github.com/jeremykendall/php-domain-parser/issues/16
+            'com tld' => ['com', 'example.com', 'us.example.com', 'us.example.com'],
+            'na tld' => ['na', 'example.na', 'us.example.na', 'us.example.na'],
+            'us.na tld' => ['us.na', 'example.us.na', 'www.example.us.na', 'www.example.us.na'],
+            'org tld' => ['org', 'example.org', 'us.example.org', 'us.example.org'],
+            'biz tld (1)' => ['biz', 'broken.biz', 'webhop.broken.biz', 'webhop.broken.biz'],
+            'biz tld (2)' => ['biz', 'webhop.biz', 'www.broken.webhop.biz', 'www.broken.webhop.biz'],
+            // END https://github.com/jeremykendall/php-domain-parser/issues/16
+            // Test ipv6 URL
+            'IP (1)' => [null, null, '[::1]', null],
+            'IP (2)' => [null, null, '[2001:db8:85a3:8d3:1319:8a2e:370:7348]', null],
+            'IP (3)' => [null, null, '[2001:db8:85a3:8d3:1319:8a2e:370:7348]', null],
+            // Test IP address: Fixes #43
+            'IP (4)' => [null, null, '192.168.1.2', null],
+            // Link-local addresses and zone indices
+            'IP (5)' => [null, null, '[fe80::3%25eth0]', null],
+            'IP (6)' => [null, null, '[fe80::1%2511]', null],
+            'fake tld' => ['faketld', 'example.faketld', 'example.faketld', 'example.faketld'],
+        ];
+    }
+
+    public function testGetPublicSuffixHandlesWrongCaseProperly()
+    {
+        $publicSuffix = 'рф';
+        $domain = 'Яндекс.РФ';
+
+        $this->assertSame($publicSuffix, $this->rules->resolve($domain)->getPublicSuffix());
     }
 
     /**
@@ -43,9 +144,16 @@ class CheckPublicSuffixTest extends TestCase
      */
     public function checkPublicSuffix($input, $expected)
     {
-        $this->assertSame($expected, $this->list->query($input)->getRegistrableDomain());
+        $this->assertSame($expected, $this->rules->resolve($input)->getRegistrableDomain());
     }
 
+    /**
+     * This test case is based on the test data linked at
+     * http://publicsuffix.org/list/ and provided by Rob Strading of Comodo.
+     *
+     * @see
+     * http://mxr.mozilla.org/mozilla-central/source/netwerk/test/unit/data/test_psl.txt?raw=1
+     */
     public function testPublicSuffixSpec()
     {
         // Test data from Rob Stradling at Comodo
@@ -80,10 +188,13 @@ class CheckPublicSuffixTest extends TestCase
         $this->checkPublicSuffix('example.com', 'example.com');
         $this->checkPublicSuffix('b.example.com', 'example.com');
         $this->checkPublicSuffix('a.b.example.com', 'example.com');
-        $this->checkPublicSuffix('uk.com', null);
-        $this->checkPublicSuffix('example.uk.com', 'example.uk.com');
-        $this->checkPublicSuffix('b.example.uk.com', 'example.uk.com');
-        $this->checkPublicSuffix('a.b.example.uk.com', 'example.uk.com');
+
+        /* REPLACE uk.com by ac.be because uk.com is a PRIVATE DOMAIN */
+        $this->checkPublicSuffix('ac.be', null);
+        $this->checkPublicSuffix('ulb.ac.be', 'ulb.ac.be');
+        $this->checkPublicSuffix('b.ulb.ac.be', 'ulb.ac.be');
+        $this->checkPublicSuffix('a.b.ulb.ac.be', 'ulb.ac.be');
+
         $this->checkPublicSuffix('test.ac', 'test.ac');
         // TLD with only 1 (wildcard) rule.
         $this->checkPublicSuffix('mm', null);

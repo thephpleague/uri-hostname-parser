@@ -1,10 +1,10 @@
 {
-    "name": "jeremykendall/php-domain-parser",
-    "description": "Public Suffix List based URL parsing implemented in PHP.",
-    "homepage": "https://github.com/jeremykendall/php-domain-parser",
+    "name": "league/uri-hostname-parser",
+    "description": "ICANN base hostname parsing implemented in PHP.",
+    "homepage": "https://github.com/thephphleague/uri-hostname-parser",
     "support": {
-        "issues": "https://github.com/jeremykendall/php-domain-parser/issues",
-        "source": "https://github.com/jeremykendall/php-domain-parser"
+        "issues": "https://github.com/thephphleague/uri-hostname-parser/issues",
+        "source": "https://github.com/thephphleague/uri-hostname-parser"
     },
     "license": "MIT",
     "authors": [
@@ -14,8 +14,13 @@
             "role": "Developer"
         },
         {
+            "name": "Ignace Nyamagana Butera",
+            "homepage": "http://nyamsprod.com",
+            "role": "Developer"
+        },
+        {
             "name": "Contributors",
-            "homepage": "https://github.com/jeremykendall/php-domain-parser/graphs/contributors"
+            "homepage": "https://github.com/phpleague/uri-hostname-parser/graphs/contributors"
         }
     ],
     "bin": [
@@ -23,8 +28,8 @@
     ],
     "keywords": [
         "Public Suffix List",
-        "domain parsing",
-        "url parsing"
+        "ICANN",
+        "domain parsing"
     ],
     "require": {
         "php": ">=7.0",
@@ -39,17 +44,17 @@
     },
     "autoload": {
         "psr-4": {
-            "Pdp\\": "src/"
+            "League\\Uri\\PublicSuffix\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Pdp\\Tests\\": "tests/"
+            "League\\Uri\\PublicSuffix\\Tests\\": "tests/"
         }
     },
     "scripts": {
         "post-install-cmd": "php bin/update-psl",
-        "test": "phpunit --coverage-text; php-cs-fixer fix -v --diff --dry-run",
+        "test": "phpunit --coverage-text; php-cs-fixer fix -vv --diff --dry-run --allow-risky=yes",
         "phpunit": "phpunit --coverage-text",
         "phpcs": "php-cs-fixer fix -v --diff --dry-run"
     }

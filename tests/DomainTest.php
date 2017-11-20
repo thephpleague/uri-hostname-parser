@@ -2,18 +2,9 @@
 
 declare(strict_types=1);
 
-/**
- * Public Suffix List PHP: Public Suffix List based URL parsing.
- *
- * @see http://github.com/jeremykendall/publicsuffixlist-php for the canonical source repository
- *
- * @copyright Copyright (c) 2017 Jeremy Kendall (http://jeremykendall.net)
- * @license   http://github.com/jeremykendall/publicsuffixlist-php/blob/master/LICENSE MIT License
- */
-namespace Pdp\Tests;
+namespace League\Uri\PublicSuffix\Tests;
 
-use Pdp\MatchedDomain;
-use Pdp\UnmatchedDomain;
+use League\Uri\PublicSuffix\Domain;
 use PHPUnit\Framework\TestCase;
 
 class DomainTest extends TestCase
@@ -24,10 +15,11 @@ class DomainTest extends TestCase
      * @param string $domain
      * @param string $publicSuffix
      */
-    public function testRegistrableDomainIsNullWithMatchedDomain(string $domain, $publicSuffix)
+    public function testRegistrableDomainIsNullWithFoundDomain(string $domain, $publicSuffix)
     {
-        $domain = new MatchedDomain($domain, $publicSuffix);
+        $domain = new Domain($domain, $publicSuffix, true);
         $this->assertNull($domain->getRegistrableDomain());
+        $this->assertNull($domain->getSubDomain());
     }
 
     public function invalidRegistrableDomainProvider()
@@ -35,18 +27,7 @@ class DomainTest extends TestCase
         return [
             'domain and suffix are the same' => ['co.uk', 'co.uk'],
             'domain has no labels' => ['faketld', 'faketld'],
+            'public suffix is null' => ['faketld', null],
         ];
-    }
-
-    /**
-     * @dataProvider invalidRegistrableDomainProvider
-     *
-     * @param string $domain
-     * @param string $publicSuffix
-     */
-    public function testRegistrableDomainIsNullWithUnMatchedDomain(string $domain, $publicSuffix)
-    {
-        $domain = new UnmatchedDomain($domain, $publicSuffix);
-        $this->assertNull($domain->getRegistrableDomain());
     }
 }

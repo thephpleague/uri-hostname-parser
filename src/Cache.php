@@ -1,15 +1,21 @@
 <?php
 /**
- * PHP Domain Parser: Public Suffix List based URL parsing.
+ * League.Uri (http://uri.thephpleague.com)
  *
- * @see http://github.com/jeremykendall/php-domain-parser for the canonical source repository
+ * @package    League\Uri
+ * @subpackage League\Uri\PublicSuffix
+ * @author     Ignace Nyamagana Butera <nyamsprod@gmail.com>
+ * @license    https://github.com/thephpleague/uri-hostname-parser/blob/master/LICENSE (MIT License)
+ * @version    1.0.0
+
+ * @link       https://github.com/thephpleague/uri-hostname-parser
  *
- * @copyright Copyright (c) 2017 Jeremy Kendall (http://jeremykendall.net)
- * @license   http://github.com/jeremykendall/php-domain-parser/blob/master/LICENSE MIT License
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
 declare(strict_types=1);
 
-namespace Pdp\Tests\Cache;
+namespace League\Uri\PublicSuffix;
 
 use DateInterval;
 use FilesystemIterator;
@@ -24,7 +30,7 @@ use Traversable;
  *
  * @see https://github.com/kodus/file-cache/blob/master/src/FileCache.php
  */
-final class FileCacheAdapter implements CacheInterface
+final class Cache implements CacheInterface
 {
     /**
      * @var string control characters for keys, reserved by PSR-16
@@ -32,7 +38,7 @@ final class FileCacheAdapter implements CacheInterface
     const PSR16_RESERVED = '/\{|\}|\(|\)|\/|\\\\|\@|\:/u';
     const FILE_PREFIX = 'pdp::';
     const FILE_EXTENSION = '.cache';
-    const CACHE_TTL = 86400 * 365 * 5;
+    const CACHE_TTL = 86400 * 7;
 
     /**
      * @var string
@@ -54,16 +60,16 @@ final class FileCacheAdapter implements CacheInterface
      */
     public function __construct(string $cache_path = '')
     {
-        if ($cache_path === '') {
-            $cache_path = realpath(dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . 'data');
+        if ('' === $cache_path) {
+            $cache_path = realpath(dirname(__DIR__).DIRECTORY_SEPARATOR.'data');
         }
 
         if (!file_exists($cache_path) && file_exists(dirname($cache_path))) {
             $this->mkdir($cache_path); // ensure that the parent path exists
         }
 
-        if (!is_writable($cache_path . DIRECTORY_SEPARATOR)) {
-            throw new InvalidArgumentException(sprintf('cache path is not writable: %s', $cache_path));
+        if (!is_writable($cache_path.DIRECTORY_SEPARATOR)) {
+            throw new CacheException(sprintf('cache path is not writable: %s', $cache_path));
         }
 
         $this->cache_path = $cache_path;
@@ -117,7 +123,7 @@ final class FileCacheAdapter implements CacheInterface
             $this->mkdir($dir);
         }
 
-        $temp_path = $this->cache_path . DIRECTORY_SEPARATOR . uniqid('', true);
+        $temp_path = $this->cache_path.DIRECTORY_SEPARATOR.uniqid('', true);
         if (false === @file_put_contents($temp_path, serialize($value))) {
             return false;
         }
@@ -149,14 +155,14 @@ final class FileCacheAdapter implements CacheInterface
         }
 
         if ($ttl instanceof DateInterval) {
-            return date_create_immutable('@' . time())->add($ttl)->getTimestamp();
+            return date_create_immutable('@'.time())->add($ttl)->getTimestamp();
         }
 
         if ($ttl === null) {
             return time() + self::CACHE_TTL;
         }
 
-        throw new InvalidArgumentException(sprintf('Expected TTL to be an int, a DateInterval or null; received "%s"', is_object($ttl) ? get_class($ttl) : gettype($ttl)));
+        throw new CacheException(sprintf('Expected TTL to be an int, a DateInterval or null; received "%s"', is_object($ttl) ? get_class($ttl) : gettype($ttl)));
     }
 
     /**
@@ -190,7 +196,7 @@ final class FileCacheAdapter implements CacheInterface
     public function getMultiple($keys, $default = null)
     {
         if (!is_array($keys) && !$keys instanceof Traversable) {
-            throw new InvalidArgumentException('keys must be either of type array or Traversable');
+            throw new CacheException('keys must be either of type array or Traversable');
         }
 
         $values = [];
@@ -207,7 +213,7 @@ final class FileCacheAdapter implements CacheInterface
     public function setMultiple($values, $ttl = null)
     {
         if (!is_array($values) && !$values instanceof Traversable) {
-            throw new InvalidArgumentException('keys must be either of type array or Traversable');
+            throw new CacheException('keys must be either of type array or Traversable');
         }
 
         $ok = true;
@@ -226,7 +232,7 @@ final class FileCacheAdapter implements CacheInterface
     public function deleteMultiple($keys)
     {
         if (!is_array($keys) && !$keys instanceof Traversable) {
-            throw new InvalidArgumentException('keys must be either of type array or Traversable');
+            throw new CacheException('keys must be either of type array or Traversable');
         }
 
         foreach ($keys as $key) {
@@ -248,7 +254,7 @@ final class FileCacheAdapter implements CacheInterface
      *
      * @param string $key
      *
-     * @throws InvalidArgumentException if the specified key contains a character reserved by PSR-16
+     * @throws CacheException if the specified key contains a character reserved by PSR-16
      *
      * @return string absolute path to cache-file
      */
@@ -256,7 +262,7 @@ final class FileCacheAdapter implements CacheInterface
     {
         $this->validateKey($key);
 
-        return $this->cache_path . DIRECTORY_SEPARATOR . self::FILE_PREFIX . $key . self::FILE_EXTENSION;
+        return $this->cache_path.DIRECTORY_SEPARATOR.self::FILE_PREFIX.$key.self::FILE_EXTENSION;
     }
 
     /**
@@ -279,16 +285,16 @@ final class FileCacheAdapter implements CacheInterface
     /**
      * @param string $key
      *
-     * @throws InvalidArgumentException
+     * @throws CacheException
      */
     private function validateKey($key)
     {
         if (!is_string($key)) {
-            throw new InvalidArgumentException(sprintf('Expected key to be a string; received "%s"', is_object($key) ? get_class($key) : gettype($key)));
+            throw new CacheException(sprintf('Expected key to be a string; received "%s"', is_object($key) ? get_class($key) : gettype($key)));
         }
 
         if (preg_match(self::PSR16_RESERVED, $key, $match) === 1) {
-            throw new InvalidArgumentException(sprintf('invalid character in key: %s', $match[0]));
+            throw new CacheException(sprintf('invalid character in key: %s', $match[0]));
         }
     }
 
