@@ -246,7 +246,7 @@ Credits
 
 - [Ignace Nyamagana Butera](https://github.com/nyamsprod)
 - [Jeremy Kendall](https://github.com/jeremykendall/)
-- [All Contributors](https://github.com/thephpleague/uri/contributors)
+- [All Contributors](https://github.com/thephpleague/uri-hostname-parser/contributors)
 
 License
 -------

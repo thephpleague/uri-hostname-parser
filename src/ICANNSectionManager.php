@@ -7,7 +7,6 @@
  * @author     Ignace Nyamagana Butera <nyamsprod@gmail.com>
  * @license    https://github.com/thephpleague/uri-hostname-parser/blob/master/LICENSE (MIT License)
  * @version    1.0.0
-
  * @link       https://github.com/thephpleague/uri-hostname-parser
  *
  * For the full copyright and license information, please view the LICENSE
@@ -127,7 +126,7 @@ final class ICANNSectionManager
         $file->fwrite($content);
         $file->setFlags(SplTempFileObject::DROP_NEW_LINE | SplTempFileObject::READ_AHEAD | SplTempFileObject::SKIP_EMPTY);
         foreach ($file as $line) {
-            $status = $this->isValidSection($status, $line);
+            $status = $this->isValidICANNSection($status, $line);
             if ($status && strpos($line, '//') === false) {
                 $rules = $this->addRule($rules, explode('.', $line));
             }
@@ -144,7 +143,7 @@ final class ICANNSectionManager
      *
      * @return bool
      */
-    private function isValidSection(bool $previous_status, string $line): bool
+    private function isValidICANNSection(bool $previous_status, string $line): bool
     {
         if (!$previous_status && strpos($line, '// ===BEGIN ICANN DOMAINS===') === 0) {
             return true;
