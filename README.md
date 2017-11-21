@@ -167,7 +167,7 @@ $manager->refreshRules('https://publicsuffix.org/list/public_suffix_list.dat');
 It is important to always have an up to date PSL ICANN Section. In order to do so the library comes bundle with an auto-update mechanism using the script located in the `bin` directory
 
 ~~~bash
-$ php ./bin/update-psl
+$ php ./bin/update-psl-icann-section
 ~~~
 
 This script assumes that your are using the Cache and HTTP Client implementations bundle with the package. If you prefer using your own implementation you should copy and then update its code to reflect your requirements.
