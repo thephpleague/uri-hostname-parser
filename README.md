@@ -1,6 +1,9 @@
 Uri Hostname Parser
 =======
 
+[![Build Status](https://img.shields.io/travis/thephpleague/uri-hostname-parser/master.svg?style=flat-square)](https://travis-ci.org/thephpleague/uri-hostname-parser)
+[![Latest Version](https://img.shields.io/github/release/thephpleague/uri-hostname-parser.svg?style=flat-square)](https://github.com/thephpleague/uri-hostname-parser/releases)
+
 This package contains a lightweight domain parser using the [Public Suffix List (PSL) ICANN section](http://publicsuffix.org/) based on the excellent work by [Jeremy Kendall](https://github.com/jeremykendall/php-domain-parser/).
 
 **GOALS**
