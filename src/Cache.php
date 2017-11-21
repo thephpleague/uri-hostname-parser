@@ -36,7 +36,7 @@ final class Cache implements CacheInterface
      * @var string control characters for keys, reserved by PSR-16
      */
     const PSR16_RESERVED = '/\{|\}|\(|\)|\/|\\\\|\@|\:/u';
-    const FILE_PREFIX = 'pdp::';
+    const FILE_PREFIX = 'leaguepsl::';
     const FILE_EXTENSION = '.cache';
     const CACHE_TTL = 86400 * 7;
 

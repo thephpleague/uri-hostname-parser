@@ -19,6 +19,6 @@ namespace League\Uri\PublicSuffix;
 
 use RuntimeException;
 
-class ManagerException extends RuntimeException
+class Exception extends RuntimeException
 {
 }

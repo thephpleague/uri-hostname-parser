@@ -6,15 +6,15 @@ namespace League\Uri\PublicSuffix\Tests;
 
 use League\Uri\PublicSuffix\Cache;
 use League\Uri\PublicSuffix\CurlHttpClient;
-use League\Uri\PublicSuffix\Manager;
-use League\Uri\PublicSuffix\ManagerException;
+use League\Uri\PublicSuffix\Exception;
+use League\Uri\PublicSuffix\ICANNSectionManager;
 use org\bovigo\vfs\vfsStream;
 use PHPUnit\Framework\TestCase;
 
-class ManagerTest extends TestCase
+class ICANNSectionManagerTest extends TestCase
 {
     /**
-     * @var Manager
+     * @var ICANNSectionManager
      */
     protected $manager;
     protected $cachePool;
@@ -28,7 +28,7 @@ class ManagerTest extends TestCase
         vfsStream::create(['cache' => []], $this->root);
         $this->cacheDir = vfsStream::url('pdp/cache');
         $this->cachePool = new Cache($this->cacheDir);
-        $this->manager = new Manager($this->cachePool, new CurlHttpClient());
+        $this->manager = new ICANNSectionManager($this->cachePool, new CurlHttpClient());
     }
 
     public function tearDown()
@@ -56,7 +56,7 @@ class ManagerTest extends TestCase
 
     public function testGetRulesThrowsException()
     {
-        $this->expectException(ManagerException::class);
+        $this->expectException(Exception::class);
         $this->manager->getRules('https://google.com');
     }
 }

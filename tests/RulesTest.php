@@ -6,7 +6,7 @@ namespace League\Uri\PublicSuffix\Tests;
 
 use League\Uri\PublicSuffix\Cache;
 use League\Uri\PublicSuffix\CurlHttpClient;
-use League\Uri\PublicSuffix\Manager;
+use League\Uri\PublicSuffix\ICANNSectionManager;
 use League\Uri\PublicSuffix\Rules;
 use PHPUnit\Framework\TestCase;
 
@@ -19,7 +19,7 @@ class RulesTest extends TestCase
 
     public function setUp()
     {
-        $manager = new Manager(new Cache(), new CurlHttpClient());
+        $manager = new ICANNSectionManager(new Cache(), new CurlHttpClient());
         $this->rules = $manager->getRules();
     }
 

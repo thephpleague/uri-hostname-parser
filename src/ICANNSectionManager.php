@@ -26,7 +26,7 @@ use SplTempFileObject;
  * This class obtains, writes, caches, and returns PHP representations
  * of the Public Suffix List ICANN section
  */
-final class Manager
+final class ICANNSectionManager
 {
     const PSL_URL = 'https://raw.githubusercontent.com/publicsuffix/list/master/public_suffix_list.dat';
 
@@ -68,7 +68,7 @@ final class Manager
         }
 
         if (!$this->refreshRules($source_url)) {
-            throw new ManagerException(sprintf('Unable to load the public suffix list rules for %s', $source_url));
+            throw new Exception(sprintf('Unable to load the public suffix list rules for %s', $source_url));
         }
 
         $rules = $this->cache->get($cacheKey);
@@ -79,15 +79,15 @@ final class Manager
     /**
      * Returns the cache key according to the source URL.
      *
-     * @param string $source_url
+     * @param string $str
      *
      * @return string
      */
-    private function getCacheKey(string $source_url): string
+    private function getCacheKey(string $str): string
     {
-        static $cacheKeyPrefix = 'ICANN_SECTION';
+        static $cacheKeyPrefix = 'ICANN-SECTION';
 
-        return $cacheKeyPrefix.'-'.md5($source_url);
+        return $cacheKeyPrefix.'-'.md5(strtolower($str));
     }
 
     /**

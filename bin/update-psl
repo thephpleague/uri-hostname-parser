@@ -3,7 +3,7 @@
 
 use League\Uri\PublicSuffix\Cache;
 use League\Uri\PublicSuffix\CurlHttpClient;
-use League\Uri\PublicSuffix\Manager;
+use League\Uri\PublicSuffix\ICANNSectionManager;
 
 function getVendorPath()
 {
@@ -30,12 +30,8 @@ require $vendorPath.'/autoload.php';
 $cacheDir = ($argc == 2 && is_dir($argv[1])) ? $argv[1] : '';
 
 try {
-    echo 'Updating Public Suffix List.' . PHP_EOL;
-    /**
-     * @TODO: Having the adapter baked in with no way for the library user to provide
-     * their own is problematic. Fix it or leave it? No one has ever complained.
-     */
-    $manager = new Manager(new Cache($cacheDir), new CurlHttpClient());
+    echo 'Updating ICANN Public Suffix Section List.' . PHP_EOL;
+    $manager = new ICANNSectionManager(new Cache($cacheDir), new CurlHttpClient());
     $manager->refreshRules();
     echo 'Update complete.' . PHP_EOL;
     die(0);
