@@ -6,7 +6,7 @@ All Notable changes to `League Uri Nostname parser` will be documented in this f
 
 ### Added
 
-- None
+- `Uri\resolve_domain` function
 
 ### Fixed
 

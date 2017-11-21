@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace League\Uri\PublicSuffix\Tests;
+namespace League\Uri\Tests;
 
 use League\Uri\PublicSuffix\Domain;
 use PHPUnit\Framework\TestCase;

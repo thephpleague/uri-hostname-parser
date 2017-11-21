@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace League\Uri\PublicSuffix\Tests;
+namespace League\Uri\Tests;
 
 use DateInterval;
 use League\Uri\PublicSuffix\Cache;

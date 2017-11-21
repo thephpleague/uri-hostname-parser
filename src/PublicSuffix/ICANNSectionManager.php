@@ -27,7 +27,7 @@ use SplTempFileObject;
  */
 final class ICANNSectionManager
 {
-    const PSL_URL = 'https://raw.githubusercontent.com/publicsuffix/list/master/public_suffix_list.dat';
+    const PSL_URL = 'https://publicsuffix.org/list/public_suffix_list.dat';
 
     /**
      * @var CacheInterface

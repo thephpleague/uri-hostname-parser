@@ -60,7 +60,7 @@ final class Cache implements CacheInterface
     public function __construct(string $cache_path = '')
     {
         if ('' === $cache_path) {
-            $cache_path = realpath(dirname(__DIR__).DIRECTORY_SEPARATOR.'data');
+            $cache_path = realpath(dirname(__DIR__, 2).DIRECTORY_SEPARATOR.'data');
         }
 
         if (!file_exists($cache_path) && file_exists(dirname($cache_path))) {

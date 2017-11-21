@@ -2,8 +2,9 @@
 
 declare(strict_types=1);
 
-namespace League\Uri\PublicSuffix\Tests;
+namespace League\Uri\Tests;
 
+use League\Uri;
 use League\Uri\PublicSuffix\Cache;
 use League\Uri\PublicSuffix\CurlHttpClient;
 use League\Uri\PublicSuffix\ICANNSectionManager;
@@ -144,7 +145,7 @@ class RulesTest extends TestCase
      */
     public function checkPublicSuffix($input, $expected)
     {
-        $this->assertSame($expected, $this->rules->resolve($input)->getRegistrableDomain());
+        $this->assertSame($expected, Uri\resolve_domain($input)->getRegistrableDomain());
     }
 
     /**

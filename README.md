@@ -54,6 +54,7 @@ Usage
 --------
 
 ~~~php
+use League\Uri;
 use League\Uri\PublicSuffix\Cache;
 use League\Uri\PublicSuffix\CurlHttpClient;
 use League\Uri\PublicSuffix\ICANNSectionManager;
@@ -63,6 +64,14 @@ require 'vendor/autoload.php';
 $manager = new ICANNSectionManager(new Cache(), new CurlHttpClient());
 $icann_rules = $manager->getRules();
 $domain = $icann_rules->resolve('www.bbc.co.uk');
+$domain->getPublicSuffix();      //returns 'co.uk'
+$domain->getRegistrableDomain(); //returns 'bbc.co.uk'
+$domain->getSubDomain();         //returns 'www'
+$domain->isValid();              //returns true
+
+// or
+
+$domain = Uri\resolve_domain('www.bbc.co.uk');
 $domain->getPublicSuffix();      //returns 'co.uk'
 $domain->getRegistrableDomain(); //returns 'bbc.co.uk'
 $domain->getSubDomain();         //returns 'www'

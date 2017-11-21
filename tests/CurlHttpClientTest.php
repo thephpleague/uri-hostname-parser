@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace League\Uri\PublicSuffix\Tests\Http;
+namespace League\Uri\Tests;
 
 use League\Uri\PublicSuffix\CurlHttpClient;
 use League\Uri\PublicSuffix\HttpClientException;

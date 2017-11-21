@@ -24,7 +24,7 @@
         }
     ],
     "bin": [
-        "bin/update-psl"
+        "bin/update-psl-icann-section"
     ],
     "keywords": [
         "Public Suffix List",
@@ -44,12 +44,13 @@
     },
     "autoload": {
         "psr-4": {
-            "League\\Uri\\PublicSuffix\\": "src/"
-        }
+            "League\\Uri\\": "src"
+        },
+        "files": ["src/functions_include.php"]
     },
     "autoload-dev": {
         "psr-4": {
-            "League\\Uri\\PublicSuffix\\Tests\\": "tests/"
+            "League\\Uri\\Tests\\": "tests/"
         }
     },
     "scripts": {
