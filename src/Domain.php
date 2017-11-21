@@ -38,9 +38,19 @@ final class Domain
     private $publicSuffix;
 
     /**
+     * @var string|null
+     */
+    private $registrableDomain;
+
+    /**
+     * @var string|null
+     */
+    private $subDomain;
+
+    /**
      * @var bool
      */
-    private $isValid;
+    private $isValid = false;
 
     /**
      * New instance.
@@ -52,8 +62,101 @@ final class Domain
     public function __construct($domain = null, $publicSuffix = null, bool $isValid = false)
     {
         $this->domain = $domain;
-        $this->publicSuffix = null !== $this->domain ? $publicSuffix : null;
-        $this->isValid = null !== $this->publicSuffix ? $isValid : false;
+        $this->setPublicSuffix($publicSuffix);
+        $this->setValidity($isValid);
+        $this->setRegistrableDomain();
+        $this->setSubDomain();
+    }
+
+    /**
+     * Compute the public suffix part
+     *
+     * @param string|null $publicSuffix
+     */
+    private function setPublicSuffix($publicSuffix)
+    {
+        if (null === $this->domain) {
+            return;
+        }
+
+        $this->publicSuffix = $publicSuffix;
+    }
+
+    /**
+     * Compute the domain validity
+     *
+     * @param bool $isValid
+     */
+    private function setValidity(bool $isValid)
+    {
+        if (null === $this->publicSuffix) {
+            return;
+        }
+
+        $this->isValid = $isValid;
+    }
+
+    /**
+     * Compute the registrable domain part
+     */
+    private function setRegistrableDomain()
+    {
+        if (!$this->hasRegistrableDomain()) {
+            return;
+        }
+
+        $countLabelsToRemove = count(explode('.', $this->publicSuffix)) + 1;
+        $domainLabels = explode('.', $this->domain);
+        $domain = implode('.', array_slice($domainLabels, count($domainLabels) - $countLabelsToRemove));
+        $this->registrableDomain = $this->normalize($domain);
+    }
+
+    /**
+     * Tells whether the domain has a registrable domain part.
+     *
+     * @return bool
+     */
+    private function hasRegistrableDomain(): bool
+    {
+        return null !== $this->publicSuffix
+            && strpos($this->domain, '.') > 0
+            && $this->publicSuffix !== $this->domain;
+    }
+
+    /**
+     * Normalize the domain according to its representation.
+     *
+     * @param string $domain
+     *
+     * @return string
+     */
+    private function normalize(string $domain): string
+    {
+        if (strpos($domain, 'xn--') !== false) {
+            return strtolower(idn_to_ascii($domain, 0, INTL_IDNA_VARIANT_UTS46));
+        }
+
+        return idn_to_utf8($domain, 0, INTL_IDNA_VARIANT_UTS46);
+    }
+
+    /**
+     * Compute the sub domain part
+     */
+    private function setSubDomain()
+    {
+        if (!$this->hasRegistrableDomain()) {
+            return;
+        }
+
+        $domainLabels = explode('.', $this->domain);
+        $countLabels = count($domainLabels);
+        $countLabelsToRemove = count(explode('.', $this->publicSuffix)) + 1;
+        if ($countLabels === $countLabelsToRemove) {
+            return;
+        }
+
+        $domain = implode('.', array_slice($domainLabels, 0, $countLabels - $countLabelsToRemove));
+        $this->subDomain = $this->normalize($domain);
     }
 
     /**
@@ -108,43 +211,7 @@ final class Domain
      */
     public function getRegistrableDomain()
     {
-        if (!$this->hasRegistrableDomain()) {
-            return null;
-        }
-
-        $countLabelsToRemove = count(explode('.', $this->publicSuffix)) + 1;
-        $domainLabels = explode('.', $this->domain);
-        $domain = implode('.', array_slice($domainLabels, count($domainLabels) - $countLabelsToRemove));
-
-        return $this->normalize($domain);
-    }
-
-    /**
-     * Tells whether the domain has a registrable domain part.
-     *
-     * @return bool
-     */
-    private function hasRegistrableDomain(): bool
-    {
-        return null !== $this->publicSuffix
-            && strpos($this->domain, '.') > 0
-            && $this->publicSuffix !== $this->domain;
-    }
-
-    /**
-     * Normalize the domain according to its representation.
-     *
-     * @param string $domain
-     *
-     * @return string
-     */
-    private function normalize(string $domain): string
-    {
-        if (strpos($domain, 'xn--') !== false) {
-            return strtolower(idn_to_ascii($domain, 0, INTL_IDNA_VARIANT_UTS46));
-        }
-
-        return idn_to_utf8($domain, 0, INTL_IDNA_VARIANT_UTS46);
+        return $this->registrableDomain;
     }
 
     /**
@@ -159,19 +226,6 @@ final class Domain
      */
     public function getSubDomain()
     {
-        if (!$this->hasRegistrableDomain()) {
-            return null;
-        }
-
-        $domainLabels = explode('.', $this->domain);
-        $countLabels = count($domainLabels);
-        $countLabelsToRemove = count(explode('.', $this->publicSuffix)) + 1;
-        if ($countLabels === $countLabelsToRemove) {
-            return null;
-        }
-
-        $domain = implode('.', array_slice($domainLabels, 0, $countLabels - $countLabelsToRemove));
-
-        return $this->normalize($domain);
+        return $this->subDomain;
     }
 }
