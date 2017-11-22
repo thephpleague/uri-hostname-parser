@@ -67,10 +67,6 @@ final class Cache implements CacheInterface
             $this->mkdir($cache_path); // ensure that the parent path exists
         }
 
-        if (!is_writable($cache_path.DIRECTORY_SEPARATOR)) {
-            throw new CacheException(sprintf('cache path is not writable: %s', $cache_path));
-        }
-
         $this->cache_path = $cache_path;
     }
 
@@ -113,6 +109,10 @@ final class Cache implements CacheInterface
      */
     public function set($key, $value, $ttl = null)
     {
+        if (!is_writable($this->cache_path.DIRECTORY_SEPARATOR)) {
+            return false;
+        }
+
         $expires_at = $this->getExpireAt($ttl);
         $path = $this->getPath($key);
         $dir = dirname($path);
