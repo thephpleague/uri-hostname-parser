@@ -280,7 +280,7 @@ The `League\Uri\PublicSuffix\Rules` class resolves the submitted host against th
 ~~~php
 final class Domain
 {
-    public function __construct(?string $domain = null,?string $publicSuffix = null, bool $isValid = false);
+    public function __construct(?string $domain = null, ?string $publicSuffix = null, bool $isValid = false);
     public function getDomain(): ?string
     public function getPublicSuffix(): ?string
     public function getRegistrableDomain(): ?string

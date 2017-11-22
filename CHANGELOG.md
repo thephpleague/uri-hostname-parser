@@ -2,7 +2,7 @@
 
 All Notable changes to `League Uri Nostname parser` will be documented in this file
 
-## Next - TBD
+## 1.0.0 - 2017-11-22
 
 ### Added
 
@@ -20,7 +20,7 @@ All Notable changes to `League Uri Nostname parser` will be documented in this f
 
 - None
 
-## 0.1.0 - 2016-11-21
+## 0.1.0 - 2017-11-21
 
 ### Added
 
