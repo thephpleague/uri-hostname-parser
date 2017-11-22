@@ -18,25 +18,26 @@ function getVendorPath()
     return null;
 }
 
+if (!extension_loaded('curl')) {
+    echo 'To work as intended this script requires the PHP cURL extension'.PHP_EOL;
+    die(1);
+}
+
 if (null === ($vendorPath = getVendorPath())) {
-    echo 'You must set up the project dependencies, run the following commands:'.PHP_EOL.
-        'curl -s http://getcomposer.org/installer | php'.PHP_EOL.
-        'php composer.phar install'.PHP_EOL;
+    echo 'You must set up the project dependencies using composer see https://getcomposer.org'.PHP_EOL;
     die(1);
 }
 
 require $vendorPath.'/autoload.php';
 
-$cacheDir = ($argc == 2 && is_dir($argv[1])) ? $argv[1] : '';
-
 try {
-    echo 'Updating ICANN Public Suffix Section List.' . PHP_EOL;
-    $manager = new ICANNSectionManager(new Cache($cacheDir), new CurlHttpClient());
+    echo 'Updating Public Suffix List ICANN Section.' . PHP_EOL;
+    $manager = new ICANNSectionManager(new Cache(), new CurlHttpClient());
     $manager->refreshRules();
     echo 'Update complete.' . PHP_EOL;
     die(0);
 } catch (Throwable $e) {
-    echo 'An error occurred while updating the Public Suffix List.' . PHP_EOL;
+    echo 'An error occurred while updating the Public Suffix List ICANN Section.' . PHP_EOL;
     echo $e->getMessage() . PHP_EOL;
     die(1);
 }

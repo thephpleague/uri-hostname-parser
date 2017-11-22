@@ -53,25 +53,28 @@ $ composer require league/uri-hostname-parser
 Usage
 --------
 
+### Simple usage
+
 ~~~php
 use League\Uri;
-use League\Uri\PublicSuffix\Cache;
-use League\Uri\PublicSuffix\CurlHttpClient;
-use League\Uri\PublicSuffix\ICANNSectionManager;
 
-require 'vendor/autoload.php';
-
-$manager = new ICANNSectionManager(new Cache(), new CurlHttpClient());
-$icann_rules = $manager->getRules();
-$domain = $icann_rules->resolve('www.bbc.co.uk');
+$domain = Uri\resolve_domain('www.bbc.co.uk');
 $domain->getPublicSuffix();      //returns 'co.uk'
 $domain->getRegistrableDomain(); //returns 'bbc.co.uk'
 $domain->getSubDomain();         //returns 'www'
 $domain->isValid();              //returns true
+~~~
 
-// or
+### Advance usage
 
-$domain = Uri\resolve_domain('www.bbc.co.uk');
+~~~php
+use League\Uri\PublicSuffix\Cache;
+use League\Uri\PublicSuffix\CurlHttpClient;
+use League\Uri\PublicSuffix\ICANNSectionManager;
+
+$manager = new ICANNSectionManager(new Cache(), new CurlHttpClient());
+$icann_rules = $manager->getRules('https://raw.githubusercontent.com/publicsuffix/list/master/public_suffix_list.dat');
+$domain = $icann_rules->resolve('www.bbc.co.uk');
 $domain->getPublicSuffix();      //returns 'co.uk'
 $domain->getRegistrableDomain(); //returns 'bbc.co.uk'
 $domain->getSubDomain();         //returns 'www'
@@ -82,6 +85,28 @@ This package only uses the ICANN section of the PSL. For more information regard
 
 Documentation
 -------
+
+### Uri\resolve_domain
+
+~~~php
+<?php
+
+namespace League\Uri;
+
+use League\Uri\PublicSuffix\Domain;
+use League\Uri\PublicSuffix\ICANNSectionManager;
+
+function resolve_domain(?string $domain, string $source_url = ICANNSectionManager::PSL_URL): Domain
+~~~
+
+This function is a simple wrapper around the basic usage of this library.
+
+`Uri\resolve_domain` accepts two arguments:
+
+- `$domain` : the domain to resolve
+- `$source_url` : the URL to the Public Suffix List ICANN Section to use to resolve the given URL
+
+This functions will use all default settings from the library. This means that `cURL` extension **MUST BE ENABLE** for this function to work.
 
 ### ICANNSectionManager
 
@@ -132,7 +157,9 @@ interface HttpClient
 }
 ~~~
 
-For advance usages you are free to use your own cache and/or http implementation. By default and out of the box, the package uses:
+For advance usages you are free to use your own cache and/or http implementation.
+
+By default and out of the box, the package uses:
 
 - a file cache PSR-16 implementation based on the excellent [FileCache](https://github.com/kodus/file-cache) which **caches the local copy for a maximum of 7 days**.
 - a HTTP client based on the cURL extension.
@@ -182,20 +209,54 @@ It is important to always have an up to date PSL ICANN Section. In order to do s
 $ php ./bin/update-psl-icann-section
 ~~~
 
-This script assumes that your are using the Cache and HTTP Client implementations bundle with the package. If you prefer using your own implementation you should copy and then update its code to reflect your requirements.
+This script assumes that your are using the Cache and HTTP Client implementations bundle with the package. If you prefer using your own implementations you should copy and then update its code to reflect your requirements.
 
-Below I'm using the `ICANNSectionManager` with the Symfony Cache component. Of course you can add more setups depending on your usage.
+For example, below I'm using the `ICANNSectionManager` with the Symfony Cache component and Guzzle.  
+Of course you can add more setups depending on your usage.
 
 *Be sure to adapt the following code to your own framework/situation. The following code is given as an example without warranty of it working out of the box.*
 
 ~~~php
-use League\Uri\PublicSuffix\CurlHttpClient;
+use GuzzleHttp\Client as GuzzleClient;
+use League\Uri\PublicSuffix\HttpClient;
+use League\Uri\PublicSuffix\HttpClientException;
 use League\Uri\PublicSuffix\ICANNSectionManager;
 use Symfony\Component\Cache\Simple\PDOCache;
 
-$symfonyCache = new PDOCache($pdo, 'league-psl-icann', 86400);
-$manager = new ICANNSectionManager($symfonyCache, new CurlHttpClient());
+final class GuzzleHttpClientAdapter implements HttpClient
+{
+    private $client;
+
+    public function __construct(GuzzleClient $client)
+    {
+        $this->client = $client;
+    }
+
+    public function getContent(string $url): string
+    {
+        try {
+            return $client->get($url)->getBody()->getContents();
+        } catch (Throwable $e) {
+            throw new HttpClientException($e->getMessage(), $e->getCode(), $e);
+        }
+    }
+}
+
+$dbh = new PDO('mysql:dbname=testdb;host=127.0.0.1', 'dbuser', 'dbpass');
+$symfonyCache = new PDOCache($dbh, 'league-psl-icann', 86400);
+$guzzleAdapter = new GuzzleHttpClientAdapter(new GuzzleClient());
+$manager = new ICANNSectionManager($symfonyCache, $guzzleAdapter);
 $manager->refreshRules();
+//the rules are saved to the database for 1 day
+//the rules are fetched using GuzzlClient
+
+$icann_rules = $manager->getRules();
+$domain = $icann_rules->resolve('nl.shop.bébé.faketld');
+$domain->getDomain();            //returns 'nl.shop.bébé.faketld'
+$domain->getPublicSuffix();      //returns 'faketld'
+$domain->getRegistrableDomain(); //returns 'bébé.faketld'
+$domain->getSubDomain();         //returns 'nl.shop'
+$domain->isValid();              //returns false
 ~~~
 
 In any case, you should setup a cron to regularly update your local cache.

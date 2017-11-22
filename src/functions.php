@@ -3,11 +3,11 @@
  * League.Uri (http://uri.thephpleague.com)
  *
  * @package    League\Uri
- * @subpackage League\Uri
+ * @subpackage League\Uri\PublicSuffix
  * @author     Ignace Nyamagana Butera <nyamsprod@gmail.com>
- * @license    https://github.com/thephpleague/uri-parser/blob/master/LICENSE (MIT License)
- * @version    1.2.0
- * @link       https://github.com/thephpleague/uri-parser/
+ * @license    https://github.com/thephpleague/uri-hostname-parser/blob/master/LICENSE (MIT License)
+ * @version    1.0.0
+ * @link       https://github.com/thephpleague/uri-hostname-parser
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -22,19 +22,20 @@ use League\Uri\PublicSuffix\Domain;
 use League\Uri\PublicSuffix\ICANNSectionManager;
 
 /**
- * Returns PSL ICANN public info for a given domain.
+ * Returns PSL ICANN section info for a given domain.
  *
  * @param string|null $domain
+ * @param string      $source_url
  *
  * @see League\Uri\PublicSuffix\Rules::resolve
  *
  * @return Domain
  */
-function resolve_domain($domain): Domain
+function resolve_domain($domain, string $source_url = ICANNSectionManager::PSL_URL): Domain
 {
-    static $icann_rules;
+    static $manager;
 
-    $icann_rules = $icann_rules ?? (new ICANNSectionManager(new Cache(), new CurlHttpClient()))->getRules();
+    $manager = $manager ?? new ICANNSectionManager(new Cache(), new CurlHttpClient());
 
-    return $icann_rules->resolve($domain);
+    return $manager->getRules($source_url)->resolve($domain);
 }

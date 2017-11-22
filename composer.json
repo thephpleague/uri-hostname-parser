@@ -33,7 +33,6 @@
     ],
     "require": {
         "php": ">=7.0",
-        "ext-curl": "*",
         "ext-intl": "*",
         "psr/simple-cache": "^1"
     },
@@ -41,6 +40,10 @@
         "phpunit/phpunit": "^6.3",
         "mikey179/vfsStream": "^1.6",
         "friendsofphp/php-cs-fixer": "^2.7"
+    },
+    "suggest": {
+        "ext-curl": "To use the bundle cURL HTTP client",
+        "psr/simple-cache-implementation": "To enable using other cache providers"
     },
     "autoload": {
         "psr-4": {
@@ -57,6 +60,6 @@
         "post-install-cmd": "php bin/update-psl",
         "test": "phpunit --coverage-text; php-cs-fixer fix -vv --diff --dry-run --allow-risky=yes",
         "phpunit": "phpunit --coverage-text",
-        "phpcs": "php-cs-fixer fix -v --diff --dry-run"
+        "phpcs": "php-cs-fixer fix -vv --diff --dry-run --allow-risky=yes"
     }
 }
