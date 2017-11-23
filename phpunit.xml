@@ -23,6 +23,7 @@
             <exclude>
                 <directory suffix="include.php">src</directory>
             </exclude>
+            <exclude>src/Installer</exclude>
         </whitelist>
     </filter>
 
