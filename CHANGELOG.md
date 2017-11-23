@@ -2,7 +2,24 @@
 
 All Notable changes to `League Uri Nostname parser` will be documented in this file
 
-## 1.0.1 - 2017-11-22
+## 1.0.2 - 2017-11-23
+
+### Added
+
+- None
+
+### Fixed
+
+- composer post script install
+
+### Deprecated
+
+- None
+
+### Removed
+
+- None
+
 
 ### Added
 
