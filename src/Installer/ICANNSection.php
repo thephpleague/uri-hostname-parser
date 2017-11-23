@@ -24,43 +24,117 @@ use Throwable;
 
 /**
  * A class to manage PSL ICANN Section rules updates
- * on composer install or update
  */
 final class ICANNSection
 {
     /**
-     * Post install information to update the local cache
+     * Script to update the local cache using composer hook
      *
      * @param Event $event
-     *
-     * @return bool
      */
-    public static function update(Event $event): bool
+    public static function update(Event $event = null)
     {
-        require $event->getComposer()->getConfig()->get('vendor-dir').'/autoload.php';
+        $io = static::getIO($event);
+        $vendor = static::getVendorPath($event);
+        if (null === $vendor) {
+            $io->writeError([
+                'You must set up the project dependencies using composer',
+                'see https://getcomposer.org',
+            ]);
+            die(1);
+        }
 
-        $io = $event->getIO();
+        require $vendor.'/autoload.php';
+
         $io->write('Updating your Public Suffix List ICANN Section local cache.');
         if (!extension_loaded('curl')) {
-            $io->writeError('Your local cache could not be updated.');
-            $io->writeError('The PHP cURL extension is missing.');
-            return true;
+            $io->writeError([
+                '😓 😓 😓 Your local cache could not be updated. 😓 😓 😓',
+                'The PHP cURL extension is missing.',
+            ]);
+            die(1);
         }
 
         try {
             $manager = new ICANNSectionManager(new Cache(), new CurlHttpClient());
             if ($manager->refreshRules()) {
-                $io->write('Your local cache has been sucessfully updated.');
-                return true;
+                $io->write([
+                    '💪 💪 💪 Your local cache has been successfully updated. 💪 💪 💪',
+                    'Have a nice day!',
+                ]);
+                die(0);
             }
-            $io->writeError('Your local cache could not be updated.');
-            $io->writeError('Please verify you can write in your local cache directory.');
-            return true;
+            $io->writeError([
+                '😓 😓 😓 Your local cache could not be updated. 😓 😓 😓',
+                'Please verify you can write in your local cache directory.',
+            ]);
+            die(1);
         } catch (Throwable $e) {
-            $io->writeError('Your local cache could not be updated.');
-            $io->writeError('An error occurred during the update');
+            $io->writeError([
+                '😓 😓 😓 Your local cache could not be updated. 😓 😓 😓',
+                'An error occurred during the update.',
+                '----- Error Trace ----',
+            ]);
             $io->writeError($e->getMessage());
-            return true;
+            die(1);
         }
+    }
+
+    /**
+     * Detect the vendor path
+     *
+     * @param Event $event
+     *
+     * @return string|null
+     */
+    private static function getVendorPath(Event $event = null)
+    {
+        if ($event instanceof Event) {
+            return $event->getComposer()->getConfig()->get('vendor-dir');
+        }
+
+        if (is_dir($vendor = dirname(__DIR__, 2).'/vendor')) {
+            return $vendor;
+        }
+
+        if (is_dir($vendor = dirname(__DIR__, 5).'/vendor')) {
+            return $vendor;
+        }
+
+        return null;
+    }
+
+    /**
+     * Detect the I/O interface to use
+     *
+     * @param Event|null $event
+     *
+     * @return object
+     */
+    private static function getIO(Event $event = null)
+    {
+        if ($event instanceof Event) {
+            return $event->getIO();
+        }
+
+        return new class() {
+            public function write($messages, bool $newline = true, int $verbosity = 2)
+            {
+                $this->doWrite($messages, $newline, false, $verbosity);
+            }
+
+            public function writeError($messages, bool $newline = true, int $verbosity = 2)
+            {
+                $this->doWrite($messages, $newline, true, $verbosity);
+            }
+
+            private function doWrite($messages, bool $newline, bool $stderr, int $verbosity)
+            {
+                fwrite(
+                    $stderr ? STDERR : STDOUT,
+                    implode($newline ? PHP_EOL : '', (array) $messages).PHP_EOL
+                );
+            }
+        };
     }
 }

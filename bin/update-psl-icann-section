@@ -1,0 +1,8 @@
+#!/usr/bin/env php
+<?php
+
+use League\Uri\Installer\ICANNSection;
+
+require dirname(__DIR__).'/src/Installer/ICANNSection.php';
+
+ICANNSection::update();
