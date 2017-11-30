@@ -2,6 +2,24 @@
 
 All Notable changes to `League Uri Nostname parser` will be documented in this file
 
+## 1.0.4 - 2017-11-30
+
+### Added
+
+- None
+
+### Fixed
+
+- Domain class with invalid domain names
+
+### Deprecated
+
+- None
+
+### Removed
+
+- None
+
 ## 1.0.3 - 2017-11-30
 
 ### Added

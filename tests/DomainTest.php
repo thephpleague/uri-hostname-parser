@@ -28,6 +28,7 @@ class DomainTest extends TestCase
             'domain and suffix are the same' => ['co.uk', 'co.uk'],
             'domain has no labels' => ['faketld', 'faketld'],
             'public suffix is null' => ['faketld', null],
+            'public suffix is invalid' => ['_b%C3%A9bé.be-', 'be-'],
         ];
     }
 }

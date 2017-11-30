@@ -6,7 +6,7 @@
  * @subpackage League\Uri\PublicSuffix
  * @author     Ignace Nyamagana Butera <nyamsprod@gmail.com>
  * @license    https://github.com/thephpleague/uri-hostname-parser/blob/master/LICENSE (MIT License)
- * @version    1.0.3
+ * @version    1.0.4
  * @link       https://github.com/thephpleague/uri-hostname-parser
  *
  * For the full copyright and license information, please view the LICENSE
@@ -128,15 +128,21 @@ final class Domain
      *
      * @param string $domain
      *
-     * @return string
+     * @return string|null
      */
-    private function normalize(string $domain): string
+    private function normalize(string $domain)
     {
+        $func = 'idn_to_utf8';
         if (strpos($domain, 'xn--') !== false) {
-            return strtolower(idn_to_ascii($domain, 0, INTL_IDNA_VARIANT_UTS46));
+            $func = 'idn_to_ascii';
         }
 
-        return idn_to_utf8($domain, 0, INTL_IDNA_VARIANT_UTS46);
+        $domain = $func($domain, 0, INTL_IDNA_VARIANT_UTS46);
+        if (false === $domain) {
+            return null;
+        }
+
+        return strtolower($domain);
     }
 
     /**
