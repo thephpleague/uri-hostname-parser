@@ -61,6 +61,15 @@ class RulesTest extends TestCase
         $this->assertNull($domain->getSubDomain());
     }
 
+    public function testWithInvalidDomainName()
+    {
+        $domain = $this->rules->resolve('_b%C3%A9bé.be-');
+        $this->assertSame('_b%C3%A9bé.be-', $domain->getDomain());
+        $this->assertFalse($domain->isValid());
+        $this->assertNull($domain->getPublicSuffix());
+        $this->assertNull($domain->getRegistrableDomain());
+    }
+
     /**
      * @dataProvider parseDataProvider
      * @param mixed $publicSuffix

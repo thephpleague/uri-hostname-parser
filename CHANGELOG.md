@@ -2,6 +2,24 @@
 
 All Notable changes to `League Uri Nostname parser` will be documented in this file
 
+## 1.0.3 - 2017-11-30
+
+### Added
+
+- None
+
+### Fixed
+
+- idn_to_utf8 public suffix conversion handle error cases
+
+### Deprecated
+
+- None
+
+### Removed
+
+- None
+
 ## 1.0.2 - 2017-11-23
 
 ### Added

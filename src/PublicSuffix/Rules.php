@@ -6,7 +6,7 @@
  * @subpackage League\Uri\PublicSuffix
  * @author     Ignace Nyamagana Butera <nyamsprod@gmail.com>
  * @license    https://github.com/thephpleague/uri-hostname-parser/blob/master/LICENSE (MIT License)
- * @version    1.0.2
+ * @version    1.0.3
  * @link       https://github.com/thephpleague/uri-hostname-parser
  *
  * For the full copyright and license information, please view the LICENSE
@@ -84,7 +84,16 @@ final class Rules
      */
     private function normalize(string $domain): string
     {
-        return strtolower(idn_to_ascii($domain, 0, INTL_IDNA_VARIANT_UTS46));
+        if (false !== strpos($domain, '%')) {
+            $domain = rawurldecode($domain);
+        }
+
+        $normalize = idn_to_ascii($domain, 0, INTL_IDNA_VARIANT_UTS46);
+        if (false === $normalize) {
+            return '';
+        }
+
+        return strtolower($normalize);
     }
 
     /**
@@ -168,8 +177,12 @@ final class Rules
     {
         $labels = explode('.', $domain);
         $publicSuffix = array_pop($labels);
-        if (null !== $publicSuffix && !$this->isPunycoded($domain)) {
+
+        if (!$this->isPunycoded($domain)) {
             $publicSuffix = idn_to_utf8($publicSuffix, 0, INTL_IDNA_VARIANT_UTS46);
+            if (false === $publicSuffix) {
+                $publicSuffix = null;
+            }
         }
 
         return new Domain($domain, $publicSuffix);
