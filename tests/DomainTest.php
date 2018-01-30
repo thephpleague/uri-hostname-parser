@@ -31,4 +31,12 @@ class DomainTest extends TestCase
             'public suffix is invalid' => ['_b%C3%A9bé.be-', 'be-'],
         ];
     }
+
+    public function testDomainInternalPhpMethod()
+    {
+        $domain = new Domain('www.ulb.ac.be', 'ac.be', true);
+        $generateDomain = eval('return '.var_export($domain, true).';');
+        $this->assertInternalType('array', $domain->__debugInfo());
+        $this->assertEquals($domain, $generateDomain);
+    }
 }

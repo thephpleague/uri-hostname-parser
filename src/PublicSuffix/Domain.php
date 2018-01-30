@@ -6,7 +6,7 @@
  * @subpackage League\Uri\PublicSuffix
  * @author     Ignace Nyamagana Butera <nyamsprod@gmail.com>
  * @license    https://github.com/thephpleague/uri-hostname-parser/blob/master/LICENSE (MIT License)
- * @version    1.0.4
+ * @version    1.1.0
  * @link       https://github.com/thephpleague/uri-hostname-parser
  *
  * For the full copyright and license information, please view the LICENSE
@@ -15,6 +15,8 @@
 declare(strict_types=1);
 
 namespace League\Uri\PublicSuffix;
+
+use JsonSerializable;
 
 /**
  * Domain Value Object
@@ -25,7 +27,7 @@ namespace League\Uri\PublicSuffix;
  * @author Jeremy Kendall <jeremy@jeremykendall.net>
  * @author Ignace Nyamagana Butera <nyamsprod@gmail.com>
  */
-final class Domain
+final class Domain implements JsonSerializable
 {
     /**
      * @var string|null
@@ -59,7 +61,7 @@ final class Domain
      * @param string|null $publicSuffix
      * @param bool        $isValid
      */
-    public function __construct($domain = null, $publicSuffix = null, bool $isValid = false)
+    public function __construct(string $domain = null, string $publicSuffix = null, bool $isValid = false)
     {
         $this->domain = $domain;
         $this->setPublicSuffix($publicSuffix);
@@ -73,7 +75,7 @@ final class Domain
      *
      * @param string|null $publicSuffix
      */
-    private function setPublicSuffix($publicSuffix)
+    private function setPublicSuffix(string $publicSuffix = null)
     {
         if (null === $this->domain) {
             return;
@@ -163,6 +165,36 @@ final class Domain
 
         $domain = implode('.', array_slice($domainLabels, 0, $countLabels - $countLabelsToRemove));
         $this->subDomain = $this->normalize($domain);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function jsonSerialize()
+    {
+        return [
+            'domain' => $this->domain,
+            'registrableDomain' => $this->registrableDomain,
+            'subDomain' => $this->subDomain,
+            'publicSuffix' => $this->publicSuffix,
+            'isCANN' => $this->isValid,
+        ];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function __debugInfo()
+    {
+        return $this->jsonSerialize();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public static function __set_state(array $properties)
+    {
+        return new self($properties['domain'], $properties['publicSuffix'], $properties['isValid']);
     }
 
     /**

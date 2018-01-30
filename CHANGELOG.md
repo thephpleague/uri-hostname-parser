@@ -2,6 +2,26 @@
 
 All Notable changes to `League Uri Nostname parser` will be documented in this file
 
+## 1.1.0 - 2018-01-30
+
+### Added
+
+- `Rules::__set_state`
+- `Domain::__debugInfo`
+- `Domain` object implements the `JsonSerializable` interface
+
+### Fixed
+
+- None
+
+### Deprecated
+
+- None
+
+### Removed
+
+- None
+
 ## 1.0.4 - 2017-11-30
 
 ### Added

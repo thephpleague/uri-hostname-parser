@@ -24,6 +24,12 @@ class RulesTest extends TestCase
         $this->rules = $manager->getRules();
     }
 
+    public function testSetState()
+    {
+        $generatedRules = eval('return '.var_export($this->rules, true).';');
+        $this->assertEquals($this->rules, $generatedRules);
+    }
+
     public function testNullWillReturnNullDomain()
     {
         $domain = $this->rules->resolve('COM');

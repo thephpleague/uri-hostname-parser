@@ -6,7 +6,7 @@
  * @subpackage League\Uri\PublicSuffix
  * @author     Ignace Nyamagana Butera <nyamsprod@gmail.com>
  * @license    https://github.com/thephpleague/uri-hostname-parser/blob/master/LICENSE (MIT License)
- * @version    1.0.4
+ * @version    1.1.0
  * @link       https://github.com/thephpleague/uri-hostname-parser
  *
  * For the full copyright and license information, please view the LICENSE
@@ -22,6 +22,14 @@ final class Rules
      * @var array
      */
     private $rules;
+
+    /**
+     * {@inheritdoc}
+     */
+    public static function __set_state(array $properties)
+    {
+        return new self($properties['rules']);
+    }
 
     /**
      * new instance.
@@ -46,14 +54,19 @@ final class Rules
             return new Domain();
         }
 
-        $normalizedDomain = $this->normalize($domain);
-        $reverseLabels = array_reverse(explode('.', $normalizedDomain));
-        $publicSuffix = $this->findPublicSuffix($reverseLabels);
+        $isValid = true;
+        $publicSuffix = $this->findPublicSuffix($domain);
         if (null === $publicSuffix) {
-            return $this->handleNoMatches($domain);
+            $isValid = false;
+            $labels = explode('.', $domain);
+            $publicSuffix = array_pop($labels);
         }
 
-        return $this->handleMatches($domain, $publicSuffix);
+        if (false === strpos($domain, 'xn--')) {
+            $publicSuffix = idn_to_utf8($publicSuffix, 0, INTL_IDNA_VARIANT_UTS46);
+        }
+
+        return new Domain($domain, false !== $publicSuffix ? $publicSuffix : null, $isValid);
     }
 
     /**
@@ -69,6 +82,49 @@ final class Rules
             && strpos($domain, '.') > 0
             && strlen($domain) === strcspn($domain, '][')
             && !filter_var($domain, FILTER_VALIDATE_IP);
+    }
+
+    /**
+     * Returns the matched public suffix or null
+     * if none found.
+     *
+     * @param string $domain
+     *
+     * @return string|null
+     */
+    private function findPublicSuffix(string $domain)
+    {
+        $normalizedDomain = $this->normalize($domain);
+        $reverseLabels = array_reverse(explode('.', $normalizedDomain));
+        $matches = [];
+        $rules = $this->rules;
+        foreach ($reverseLabels as $label) {
+            //match exception rule
+            if (isset($rules[$label], $rules[$label]['!'])) {
+                break;
+            }
+
+            //match wildcard rule
+            if (isset($rules['*'])) {
+                $matches[] = $label;
+                break;
+            }
+
+            //no match found
+            if (!isset($rules[$label])) {
+                break;
+            }
+
+            $matches[] = $label;
+            $rules = $rules[$label];
+        }
+
+        $foundLabels = array_reverse(array_filter($matches, 'strlen'));
+        if (empty($foundLabels)) {
+            return null;
+        }
+
+        return implode('.', $foundLabels);
     }
 
     /**
@@ -94,97 +150,5 @@ final class Rules
         }
 
         return strtolower($normalize);
-    }
-
-    /**
-     * Returns the matched public suffix or null
-     * if none found.
-     *
-     * @param array $labels
-     *
-     * @return string|null
-     */
-    private function findPublicSuffix(array $labels)
-    {
-        $matches = [];
-        $rules = $this->rules;
-        foreach ($labels as $label) {
-            //match exception rule
-            if (isset($rules[$label], $rules[$label]['!'])) {
-                break;
-            }
-
-            //match wildcard rule
-            if (isset($rules['*'])) {
-                array_unshift($matches, $label);
-                break;
-            }
-
-            //no match found
-            if (!isset($rules[$label])) {
-                // Avoids improper parsing when $domain's subdomain + public suffix ===
-                // a valid public suffix (e.g. domain 'us.example.com' and public suffix 'us.com')
-                //
-                // Added by @goodhabit in https://github.com/jeremykendall/php-domain-parser/pull/15
-                // Resolves https://github.com/jeremykendall/php-domain-parser/issues/16
-                break;
-            }
-
-            array_unshift($matches, $label);
-            $rules = $rules[$label];
-        }
-
-        return empty($matches) ? null : implode('.', array_filter($matches, 'strlen'));
-    }
-
-    /**
-     * Returns the Domain value object.
-     *
-     * @param string $domain
-     * @param string $publicSuffix
-     *
-     * @return Domain
-     */
-    private function handleMatches(string $domain, string $publicSuffix): Domain
-    {
-        if (!$this->isPunycoded($domain)) {
-            $publicSuffix = idn_to_utf8($publicSuffix, 0, INTL_IDNA_VARIANT_UTS46);
-        }
-
-        return new Domain($domain, $publicSuffix, true);
-    }
-
-    /**
-     * Tells whether the domain is punycoded.
-     *
-     * @param string $domain
-     *
-     * @return bool
-     */
-    private function isPunycoded(string $domain): bool
-    {
-        return strpos($domain, 'xn--') !== false;
-    }
-
-    /**
-     * Returns the Domain value object.
-     *
-     * @param string $domain
-     *
-     * @return Domain
-     */
-    private function handleNoMatches(string $domain): Domain
-    {
-        $labels = explode('.', $domain);
-        $publicSuffix = array_pop($labels);
-
-        if (!$this->isPunycoded($domain)) {
-            $publicSuffix = idn_to_utf8($publicSuffix, 0, INTL_IDNA_VARIANT_UTS46);
-            if (false === $publicSuffix) {
-                $publicSuffix = null;
-            }
-        }
-
-        return new Domain($domain, $publicSuffix);
     }
 }
