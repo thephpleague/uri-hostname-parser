@@ -2,6 +2,24 @@
 
 All Notable changes to `League Uri Nostname parser` will be documented in this file
 
+## 1.1.1 - 2018-02-16
+
+### Added
+
+- None
+
+### Fixed
+
+- Cache Key to allow better interoperability with PSR-16
+
+### Deprecated
+
+- None
+
+### Removed
+
+- None
+
 ## 1.1.0 - 2018-01-30
 
 ### Added
