@@ -1,6 +1,18 @@
 Uri Hostname Parser
 =======
 
+# This package is EOL since 2018-02-16
+
+**This repository was a temporary workaround for**
+
+- **[PHP Domain Parser v3.0](https://github.com/jeremykendall/php-domain-parser/releases/tag/3.0.0)**
+- **used by [League URI v5](https://github.com/thephpleague/uri/releases/tag/5.2.0).**
+
+**You should instead use:**
+
+- **[The latest League URI package](https://github.com/thephpleague/uri/releases).**
+- **[The latest PHP Domain Parser](https://github.com/jeremykendall/php-domain-parser/releases).**
+
 [![Build Status](https://img.shields.io/travis/thephpleague/uri-hostname-parser/master.svg?style=flat-square)](https://travis-ci.org/thephpleague/uri-hostname-parser)
 [![Latest Version](https://img.shields.io/github/release/thephpleague/uri-hostname-parser.svg?style=flat-square)](https://github.com/thephpleague/uri-hostname-parser/releases)
 
